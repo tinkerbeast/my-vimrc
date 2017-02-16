@@ -1,0 +1,27 @@
+[submodule "bundle/vim-lang-go"]
+	path = bundle/vim-lang-go
+	url = https://github.com/fatih/vim-go.git
+[submodule "bundle/vim-lang-less"]
+	path = bundle/vim-lang-less
+	url = https://github.com/groenewege/vim-less
+[submodule "bundle/vim-lang-coffeescript"]
+	path = bundle/vim-lang-coffeescript
+	url = https://github.com/kchmck/vim-coffee-script.git
+[submodule "bundle/vim-lang-nginx"]
+	path = bundle/vim-lang-nginx
+	url = https://github.com/evanmiller/nginx-vim-syntax.git
+[submodule "bundle/vim-lang-javascript"]
+	path = bundle/vim-lang-javascript
+	url = https://github.com/pangloss/vim-javascript.git
+[submodule "bundle/vim-colors-hybrid"]
+	path = bundle/vim-colors-hybrid
+	url = https://github.com/w0ng/vim-hybrid
+[submodule "bundle/lightline"]
+	path = bundle/lightline
+	url = https://github.com/itchyny/lightline.vim.git
+[submodule "bundle/nerdtree"]
+	path = bundle/nerdtree
+	url = https://github.com/scrooloose/nerdtree.git
+[submodule "bundle/simpylfold"]
+	path = bundle/simpylfold
+	url = https://github.com/tmhedberg/simpylfold
