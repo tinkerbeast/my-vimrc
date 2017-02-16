@@ -125,6 +125,12 @@ endif
 " Add a bit extra margin to the left
 set foldcolumn=1
 
+" Enable folding
+set foldmethod=syntax
+set foldlevel=40
+
+" Enable folding with the spacebar
+nnoremap <space> za
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Colors and Fonts
