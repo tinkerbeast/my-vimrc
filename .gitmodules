@@ -25,3 +25,6 @@
 [submodule "bundle/simpylfold"]
 	path = bundle/simpylfold
 	url = https://github.com/tmhedberg/simpylfold
+[submodule "bundle/vim-lang-json"]
+	path = bundle/vim-lang-json
+	url = https://github.com/elzr/vim-json.git

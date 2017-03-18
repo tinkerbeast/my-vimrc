@@ -1,9 +1,9 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" This file is adapted from https://github.com/amix/vimrc
+" This file is adapted from github.com/amix/vimrc
 "
-" References:
-"  Moving in vim: http://vim.wikia.com/wiki/All_the_right_moves
-"  Tabs in vim: http://vim.wikia.com/wiki/Using_tab_pages
+" References
+"  Moving in vim - vim.wikia.com/wiki/All_the_right_moves
+"  Tabs in vim - vim.wikia.com/wiki/Using_tab_pages
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 
@@ -55,6 +55,10 @@ map <leader><Tab> :set list!<cr>
 " 80, 120 column divider
 let &colorcolumn="80,".join(range(120,999),",")
 
+" This works great, but highlights beyond 120 are weird
+" So for log type files with long lines, set only a single column
+autocmd BufRead,BufNewFile *.{txt,log,conf,tech} setlocal cc=80
+
 " Set 7 lines to the cursor - when moving vertically using j/k
 set scrolloff=7
 
@@ -82,7 +86,7 @@ set cmdheight=2
 set hid
 
 " Make yank and delete operations copy to clipboard
-set clipboard=unnamedplus
+set clipboard=unnamed
 
 " Configure backspace so it acts as it should act
 set backspace=eol,start,indent
@@ -149,12 +153,8 @@ if $COLORTERM == 'gnome-terminal'
     set t_Co=256
 endif
 
-try
-    colorscheme desert
-catch
-endtry
-
-set background=dark
+colorscheme default
+set background=light
 
 " Set extra options when running in GUI mode
 if has("gui_running")
@@ -176,7 +176,7 @@ if has("mac") || has("macunix")
 elseif has("win16") || has("win32")
     set gfn=Hack:h14,Source\ Code\ Pro:h12,Bitstream\ Vera\ Sans\ Mono:h11
 elseif has("gui_gtk2")
-    set gfn=Source\ Code\ Pro\ 11,Bitstream\ Vera\ Sans\ Mono\ 11
+    set gfn=Bitstream\ Vera\ Sans\ Mono\ 11
 elseif has("linux")
     set gfn=Hack\ 11,Source\ Code\ Pro\ 11,Bitstream\ Vera\ Sans\ Mono\ 11
 elseif has("unix")
@@ -296,12 +296,8 @@ map <leader>ts :tab split<cr>
 " Switch CWD to the directory of the open buffer
 map <leader>cd :cd %:p:h<cr>:pwd<cr>
 
-" Specify the behavior when switching between buffers 
-try
-  set switchbuf=useopen,usetab,newtab
-  set stal=2
-catch
-endtry
+" show tabline always 
+set stal=2
 
 " Return to last edit position when opening files (You want this!)
 au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
@@ -531,10 +527,15 @@ autocmd BufWrite *.coffee :call DeleteTrailingWS()
 " Install the following (assumes pathogen plugin is on)
 "   git clone https://github.com/w0ng/vim-hybrid ~/.vim/bundle/vim-colors-hybrid
 
-" enable a color scheme
-set background=dark
-colorscheme hybrid
-let g:hybrid_reduced_contrast = 1
+" enable a color scheme for only
+    let g:hybrid_custom_term_colors = 1
+    let g:hybrid_reduced_contrast = 1
+    colorscheme hybrid
+if has('gui_running')
+    set background=dark
+endif
+
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins - Completion / Snippets
@@ -550,5 +551,5 @@ let g:hybrid_reduced_contrast = 1
 "   git clone https://github.com/itchyny/lightline.vim.git ~/.vim/bundle/lightline
 "   git clone https://github.com/scrooloose/nerdtree.git ~/.vim/bundle/nerdtree
 "   git clone https://github.com/tmhedberg/simpylfold  ~/.vim/bundle/simpylfold
-
 map <C-n> :NERDTreeToggle<CR>
+
