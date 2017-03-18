@@ -52,8 +52,8 @@ set listchars=eol:$,tab:>-,trail:~,extends:>,precedes:<
 " shortcut to enable showing special characters
 map <leader><Tab> :set list!<cr>
 
-" 80 column divider
-let &colorcolumn=join(range(81,999),",")
+" 80, 120 column divider
+let &colorcolumn="80,".join(range(120,999),",")
 
 " Set 7 lines to the cursor - when moving vertically using j/k
 set scrolloff=7
@@ -131,6 +131,11 @@ set foldlevel=40
 
 " Enable folding with the spacebar
 nnoremap <space> za
+
+" Switch foldmethods with the leader key
+map <leader>zi :set foldmethod=indent<cr>
+map <leader>zs :set foldmethod=syntax<cr>
+map <leader>zm :set foldmethod=manual<cr>
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Colors and Fonts
@@ -529,7 +534,7 @@ autocmd BufWrite *.coffee :call DeleteTrailingWS()
 " enable a color scheme
 set background=dark
 colorscheme hybrid
-
+let g:hybrid_reduced_contrast = 1
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins - Completion / Snippets
@@ -545,3 +550,5 @@ colorscheme hybrid
 "   git clone https://github.com/itchyny/lightline.vim.git ~/.vim/bundle/lightline
 "   git clone https://github.com/scrooloose/nerdtree.git ~/.vim/bundle/nerdtree
 "   git clone https://github.com/tmhedberg/simpylfold  ~/.vim/bundle/simpylfold
+
+map <C-n> :NERDTreeToggle<CR>
