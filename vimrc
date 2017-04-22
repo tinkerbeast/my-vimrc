@@ -62,6 +62,21 @@ autocmd BufRead,BufNewFile *.{txt,log,conf,tech} setlocal cc=80
 " Set 7 lines to the cursor - when moving vertically using j/k
 set scrolloff=7
 
+" Change the cursore in in insert mode for gnome-terminal >= 3.16
+if has("gui_running")
+else
+    if has("autocmd")
+      au VimEnter,InsertLeave * silent execute '!echo -ne "\e[1 q"' | redraw!
+      au InsertEnter,InsertChange *
+        \ if v:insertmode == 'i' | 
+        \   silent execute '!echo -ne "\e[5 q"' | redraw! |
+        \ elseif v:insertmode == 'r' |
+        \   silent execute '!echo -ne "\e[3 q"' | redraw! |
+        \ endif
+      au VimLeave * silent execute '!echo -ne "\e[ q"' | redraw!
+    endif
+endif
+
 " Avoid garbled characters in Chinese language windows OS
 let $LANG='en' 
 set langmenu=en
@@ -235,12 +250,16 @@ map <silent> <leader><cr> :noh<cr>
 " Smart way to move between windows
 "map <C-j> <C-W>j
 "map <C-k> <C-W>k
-map <C-h> <C-W>h
-map <C-l> <C-W>l
+"map <C-h> <C-W>h
+"map <C-l> <C-W>l
 
 " Page up , page down
 nnoremap <C-k> <C-u>
 nnoremap <C-j> <C-d>
+
+" Move to begining or end of line
+map <C-h> ^
+map <C-l> $
 
 """" Buffers
 
