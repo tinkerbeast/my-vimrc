@@ -48,7 +48,9 @@ set wildmenu
 set number
 
 " set the special characters in a file
-set listchars=eol:$,tab:>-,trail:~,extends:>,precedes:<
+"set showbreak=↪\ 
+set listchars=tab:→\ ,eol:↲,nbsp:␣,trail:·,space:·
+"set listchars=eol:$,tab:>-,trail:~,extends:>,precedes:<
 " shortcut to enable showing special characters
 map <leader><Tab> :set list!<cr>
 
@@ -547,10 +549,18 @@ autocmd BufWrite *.coffee :call DeleteTrailingWS()
 "   git clone https://github.com/w0ng/vim-hybrid ~/.vim/bundle/vim-colors-hybrid
 
 " enable a color scheme for only
+if has('gui_running')
     let g:hybrid_custom_term_colors = 1
     let g:hybrid_reduced_contrast = 1
     colorscheme hybrid
-if has('gui_running')
+    set background=dark
+else
+    let g:solarized_termcolors = 256
+    let g:solarized_bold = 1
+    let g:solarized_underline = 1
+    let g:solarized_italic = 1
+    let g:solarized_contrast = "normal"
+    colorscheme solarized
     set background=dark
 endif
 
