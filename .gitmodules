@@ -7,9 +7,6 @@
 [submodule "bundle/vim-lang-coffeescript"]
 	path = bundle/vim-lang-coffeescript
 	url = https://github.com/kchmck/vim-coffee-script.git
-[submodule "bundle/vim-lang-nginx"]
-	path = bundle/vim-lang-nginx
-	url = https://github.com/evanmiller/nginx-vim-syntax.git
 [submodule "bundle/vim-lang-javascript"]
 	path = bundle/vim-lang-javascript
 	url = https://github.com/pangloss/vim-javascript.git
