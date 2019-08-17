@@ -22,3 +22,9 @@
 [submodule "bundle/misc-syntastic"]
 	path = bundle/misc-syntastic
 	url = https://github.com/scrooloose/syntastic
+[submodule "bundle/completion-vim-snippets"]
+	path = bundle/completion-vim-snippets
+	url = https://github.com/honza/vim-snippets
+[submodule "bundle/completion-ultisnips"]
+	path = bundle/completion-ultisnips
+	url = https://github.com/sirver/ultisnips

@@ -596,3 +596,8 @@ let g:syntastic_check_on_wq = 0
 " => Plugins - Completion / Snippets
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+" https://github.com/honza/vim-snippets
+" https://github.com/sirver/ultisnips
+let g:UltiSnipsExpandTrigger="<tab>"
+let g:UltiSnipsJumpForwardTrigger="<C-tab>"
+let g:UltiSnipsJumpBackwardTrigger="<S-tab>"
