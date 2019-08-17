@@ -562,11 +562,18 @@ else
 endif
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Plugins - Interface
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+" https://github.com/vim-airline/vim-airline
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#tab_nr_type = 1
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins - Misc
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-"   cd ~/.vim/bundle; wget http://cscope.sourceforge.net/cscope_maps.vim
-"   git clone https://github.com/itchyny/lightline.vim.git ~/.vim/bundle/lightline
 "   git clone https://github.com/scrooloose/nerdtree.git ~/.vim/bundle/nerdtree
 "   git clone https://github.com/tmhedberg/simpylfold  ~/.vim/bundle/simpylfold
 map <C-n> :NERDTreeToggle<CR>
