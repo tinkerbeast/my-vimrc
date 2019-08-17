@@ -534,10 +534,6 @@ autocmd BufWrite *.py :call DeleteTrailingWS()
 autocmd BufWrite *.coffee :call DeleteTrailingWS()
 
 " Install the following (assumes pathogen plugin is on)
-"    git clone https://github.com/fatih/vim-go.git ~/.vim/bundle/vim-lang-go
-"    git clone https://github.com/groenewege/vim-less ~/.vim/bundle/vim-lang-less
-"    git clone https://github.com/kchmck/vim-coffee-script.git ~/.vim/bundle/vim-lang-coffeescript/
-"    git clone https://github.com/evanmiller/nginx-vim-syntax.git ~/.vim/bundle/vim-lang-nginx
 "    git clone https://github.com/pangloss/vim-javascript.git ~/.vim/bundle/vim-lang-javascript
 
 
@@ -547,6 +543,7 @@ autocmd BufWrite *.coffee :call DeleteTrailingWS()
 
 " Install the following (assumes pathogen plugin is on)
 "   git clone https://github.com/w0ng/vim-hybrid ~/.vim/bundle/vim-colors-hybrid
+"   git clone https://github.com/altercation/vim-colors-solarized ~/.vim/bundle/vim-colors-solarized
 
 " enable a color scheme for only
 if has('gui_running')
@@ -564,14 +561,6 @@ else
     set background=dark
 endif
 
-
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Plugins - Completion / Snippets
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-
-
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins - Misc
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -581,4 +570,8 @@ endif
 "   git clone https://github.com/scrooloose/nerdtree.git ~/.vim/bundle/nerdtree
 "   git clone https://github.com/tmhedberg/simpylfold  ~/.vim/bundle/simpylfold
 map <C-n> :NERDTreeToggle<CR>
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Plugins - Completion / Snippets
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
