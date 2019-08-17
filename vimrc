@@ -569,14 +569,18 @@ endif
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#tab_nr_type = 1
 
+"   git clone https://github.com/scrooloose/nerdtree.git ~/.vim/bundle/nerdtree
+map <C-n> :NERDTreeToggle<CR>
+
+" https://github.com/majutsushi/tagbar
+nmap <F8> :TagbarToggle<CR>
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins - Misc
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-"   git clone https://github.com/scrooloose/nerdtree.git ~/.vim/bundle/nerdtree
 "   git clone https://github.com/tmhedberg/simpylfold  ~/.vim/bundle/simpylfold
-map <C-n> :NERDTreeToggle<CR>
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins - Completion / Snippets
