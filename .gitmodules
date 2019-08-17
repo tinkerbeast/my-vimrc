@@ -4,9 +4,6 @@
 [submodule "bundle/vim-colors-hybrid"]
 	path = bundle/vim-colors-hybrid
 	url = https://github.com/w0ng/vim-hybrid
-[submodule "bundle/simpylfold"]
-	path = bundle/simpylfold
-	url = https://github.com/tmhedberg/simpylfold
 [submodule "bundle/vim-colors-solarized"]
 	path = bundle/vim-colors-solarized
 	url = git://github.com/altercation/vim-colors-solarized.git
@@ -19,3 +16,9 @@
 [submodule "bundle/interface-nerdtree"]
 	path = bundle/interface-nerdtree
 	url = https://github.com/scrooloose/nerdtree
+[submodule "bundle/misc-ctrlp"]
+	path = bundle/misc-ctrlp
+	url = https://github.com/ctrlpvim/ctrlp.vim
+[submodule "bundle/misc-syntastic"]
+	path = bundle/misc-syntastic
+	url = https://github.com/scrooloose/syntastic
