@@ -45,7 +45,8 @@ set wildmenu
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 " Show line numbers - <normal,insert,visual>
-set number
+" set number
+set rnu
 
 " set the special characters in a file
 "set showbreak=↪\ 
@@ -570,7 +571,8 @@ let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#tab_nr_type = 1
 
 "   git clone https://github.com/scrooloose/nerdtree.git ~/.vim/bundle/nerdtree
-map <C-n> :NERDTreeToggle<CR>
+"map <C-n> :NERDTreeToggle<CR>
+map <C-n> :NERDTreeFind<CR>
 
 " https://github.com/majutsushi/tagbar
 nmap <F8> :TagbarToggle<CR>
@@ -580,16 +582,9 @@ nmap <F8> :TagbarToggle<CR>
 " => Plugins - Misc
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" https://github.com/scrooloose/syntastic
-set statusline+=%#warningmsg#
-set statusline+=%{SyntasticStatuslineFlag()}
-set statusline+=%*
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 1
-let g:syntastic_check_on_wq = 0
-
 " https://github.com/ctrlpvim/ctrlp.vim
+
+" https://github.com/jiangmiao/auto-pairs
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -598,6 +593,20 @@ let g:syntastic_check_on_wq = 0
 
 " https://github.com/honza/vim-snippets
 " https://github.com/sirver/ultisnips
-let g:UltiSnipsExpandTrigger="<tab>"
-let g:UltiSnipsJumpForwardTrigger="<C-tab>"
-let g:UltiSnipsJumpBackwardTrigger="<S-tab>"
+
+" remapped from tab to avoid conflict with tab completion
+let g:UltiSnipsExpandTrigger="<C-space>"
+let g:UltiSnipsJumpForwardTrigger="<C-space>"
+let g:UltiSnipsJumpBackwardTrigger="<S-space>"
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Plugins - Syntax
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+" git clone https://github.com/w0rp/ale
+
+"let g:ale_sign_error = "✗"
+"let g:ale_sign_info = 'ⓘ'
+"let g:ale_sign_warning = "⚠"
+
