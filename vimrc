@@ -520,6 +520,9 @@ Plug 'ctrlpvim/ctrlp.vim'
 Plug 'jiangmiao/auto-pairs'
 
 " ### completion
+" vim-snippets with ultisnips engine
+Plug 'honza/vim-snippets'
+Plug 'sirver/ultisnips'
 " deoplete
 if has('nvim')
   Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
@@ -621,22 +624,32 @@ nmap <F8> :TagbarToggle<CR>
 " => Plugins - Completion / Snippets
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" https://github.com/honza/vim-snippets
-" https://github.com/sirver/ultisnips
-
+" vim-snippets with ultisnips engine
 " remapped from tab to avoid conflict with tab completion
-"let g:UltiSnipsExpandTrigger="<C-space>"
-"let g:UltiSnipsJumpForwardTrigger="<C-space>"
-"let g:UltiSnipsJumpBackwardTrigger="<S-space>"
+let g:UltiSnipsExpandTrigger="<C-space>"
+let g:UltiSnipsJumpForwardTrigger="<C-space>"
+let g:UltiSnipsJumpBackwardTrigger="<S-space>"
 
-
-""""""""""""""""""""""""""""""
-" Deoplete setup
-""""""""""""""""""""""""""""""
-
+" Deoplete
 let g:deoplete#enable_at_startup = 1
-
 " tab completion with deoplete
 inoremap <silent><expr> <Tab>
       \ pumvisible() ? "\<C-n>" : "\<TAB>"
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Plugins - Syntax / Linter
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+" fixed width rhs column which includes sign
+set signcolumn=yes
+
+" ALE
+" disable lint on text change
+let g:ale_lint_on_text_changed = 0
+" C/CPP
+let g:ale_linters = {
+\   'cpp': ['clang', 'gcc'],
+\}
+let g:ale_c_parse_compile_commands = 1
 

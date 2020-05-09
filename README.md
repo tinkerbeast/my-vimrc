@@ -12,13 +12,14 @@ The standard vimrc I use. This project is just for keeping an online copy and ea
 
 ### Static plugins
 
-    curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
-    curl -LSso ~/.vim/plugin/cscope_maps.vim http://cscope.sourceforge.net/cscope_maps.vim
+    mkdir -p ~/.vim/autoload/
+    mkdir -p ~/.vim/plugin/
+    curl -fLo ~/.vim/autoload/plug.vim https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    curl -fLo ~/.vim/plugin/cscope_maps.vim http://cscope.sourceforge.net/cscope_maps.vim
 
-### Pathogen based plugins
+### Plug base plugins
 
-    cd .vim
-    git submodule update --init --recursive
+    :PlugInstall
 
 
 
