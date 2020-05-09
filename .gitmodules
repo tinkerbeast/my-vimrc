@@ -1,12 +1,6 @@
-[submodule "bundle/vim-lang-javascript"]
-	path = bundle/vim-lang-javascript
-	url = https://github.com/pangloss/vim-javascript.git
 [submodule "bundle/vim-colors-hybrid"]
 	path = bundle/vim-colors-hybrid
 	url = https://github.com/w0ng/vim-hybrid
-[submodule "bundle/vim-colors-solarized"]
-	path = bundle/vim-colors-solarized
-	url = git://github.com/altercation/vim-colors-solarized.git
 [submodule "bundle/interface-tagbar"]
 	path = bundle/interface-tagbar
 	url = https://github.com/majutsushi/tagbar
