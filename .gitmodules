@@ -1,27 +1,6 @@
-[submodule "bundle/vim-colors-hybrid"]
-	path = bundle/vim-colors-hybrid
-	url = https://github.com/w0ng/vim-hybrid
-[submodule "bundle/interface-tagbar"]
-	path = bundle/interface-tagbar
-	url = https://github.com/majutsushi/tagbar
-[submodule "bundle/interface-vim-airline"]
-	path = bundle/interface-vim-airline
-	url = https://github.com/vim-airline/vim-airline
-[submodule "bundle/interface-nerdtree"]
-	path = bundle/interface-nerdtree
-	url = https://github.com/scrooloose/nerdtree
-[submodule "bundle/misc-ctrlp"]
-	path = bundle/misc-ctrlp
-	url = https://github.com/ctrlpvim/ctrlp.vim
 [submodule "bundle/completion-vim-snippets"]
 	path = bundle/completion-vim-snippets
 	url = https://github.com/honza/vim-snippets
 [submodule "bundle/completion-ultisnips"]
 	path = bundle/completion-ultisnips
 	url = https://github.com/sirver/ultisnips
-[submodule "bundle/syntax-ale"]
-	path = bundle/syntax-ale
-	url = https://github.com/w0rp/ale
-[submodule "bundle/misc-autopairs"]
-	path = bundle/misc-autopairs
-	url = https://github.com/jiangmiao/auto-pairs
