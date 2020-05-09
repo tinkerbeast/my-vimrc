@@ -419,6 +419,7 @@ map <leader>s? z=
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Misc
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 " Remove the Windows ^M - when the encodings gets messed up
 noremap <Leader>m mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
 
@@ -432,11 +433,10 @@ map <leader>x :e ~/buffer.md<cr>
 map <leader>pp :setlocal paste!<cr>
 
 
-
-
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Helper functions
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 function! CmdLine(str)
     exe "menu Foo.Bar :" . a:str
     emenu Foo.Bar
@@ -459,7 +459,6 @@ function! VisualSelection(direction, extra_filter) range
     let @/ = l:pattern
     let @" = l:saved_reg
 endfunction
-
 
 " Returns true if paste mode is enabled
 function! HasPaste()
@@ -497,15 +496,11 @@ endfunction
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Plugins - Package manager - Pathogen
+" => Plugins - Package manager
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 " Installation 
-"   mkdir -p ~/.vim/autoload ~/.vim/bundle ~/.vim/plugin && \
-"   curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
-
-" Enable pathogen
-execute pathogen#infect()
+" curl -fLo ~/.vim/autoload/plug.vim https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
 call plug#begin()
 " ### lang-support
@@ -513,8 +508,16 @@ call plug#begin()
 Plug 'sheerun/vim-polyglot'
 
 " ### colorschemes
-" onedark
+Plug 'tomasr/molokai'
 Plug 'joshdick/onedark.vim'
+Plug 'w0ng/vim-hybrid'
+
+" ### interface
+Plug 'vim-airline/vim-airline'
+Plug 'scrooloose/nerdtree'
+Plug 'majutsushi/tagbar'
+Plug 'ctrlpvim/ctrlp.vim'
+Plug 'jiangmiao/auto-pairs'
 
 " ### completion
 " deoplete
@@ -526,6 +529,10 @@ else
   Plug 'roxma/vim-hug-neovim-rpc'
 endif
 
+" ### syntax-check
+" ale
+Plug 'w0rp/ale'
+
 call plug#end()
 
 
@@ -533,7 +540,6 @@ call plug#end()
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins - Static
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
 
 "   curl -LSso ~/.vim/plugin/pathogen.vim http://cscope.sourceforge.net/cscope_maps.vim
 
@@ -555,9 +561,6 @@ func! DeleteTrailingWS()
 endfunc
 autocmd BufWrite *.py :call DeleteTrailingWS()
 autocmd BufWrite *.coffee :call DeleteTrailingWS()
-
-" Install the following (assumes pathogen plugin is on)
-"    git clone https://github.com/pangloss/vim-javascript.git ~/.vim/bundle/vim-lang-javascript
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -598,25 +601,20 @@ endif
 " => Plugins - Interface
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" https://github.com/vim-airline/vim-airline
+" vim-airline
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#tab_nr_type = 1
 
-"   git clone https://github.com/scrooloose/nerdtree.git ~/.vim/bundle/nerdtree
+" nerdtree
 "map <C-n> :NERDTreeToggle<CR>
 map <C-n> :NERDTreeFind<CR>
 
-" https://github.com/majutsushi/tagbar
+" tagbar
 nmap <F8> :TagbarToggle<CR>
 
+" ctrlp.vim
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Plugins - Misc
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-" https://github.com/ctrlpvim/ctrlp.vim
-
-" https://github.com/jiangmiao/auto-pairs
+" auto-pairs
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -627,9 +625,9 @@ nmap <F8> :TagbarToggle<CR>
 " https://github.com/sirver/ultisnips
 
 " remapped from tab to avoid conflict with tab completion
-let g:UltiSnipsExpandTrigger="<C-space>"
-let g:UltiSnipsJumpForwardTrigger="<C-space>"
-let g:UltiSnipsJumpBackwardTrigger="<S-space>"
+"let g:UltiSnipsExpandTrigger="<C-space>"
+"let g:UltiSnipsJumpForwardTrigger="<C-space>"
+"let g:UltiSnipsJumpBackwardTrigger="<S-space>"
 
 
 """"""""""""""""""""""""""""""
