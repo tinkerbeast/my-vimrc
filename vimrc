@@ -6,72 +6,127 @@
 "  Tabs in vim - vim.wikia.com/wiki/Using_tab_pages
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+" Defacto standards
+" -----------------
 
+if (has("nvim"))
+  " Neovim sets the following options by default since they have become defacto
+  " standards. See `help nvim-defaults`.
+else
+  syntax on                       " use enable if want to keep custom colors
+  filetype plugin indent on       " Enable file type detection.
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => General
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+  set autoindent    " Copy indent from current line when starting a new line
+  set autoread      " Set to auto read when a file is changed from the outside
+  set background=dark " Default background set to 'dark'
+  set backspace=indent,eol,start  " more powerful backspacing
+  "set backupdir    " Doesn't matter since backups are disabled after this
+  set belloff=all   " Turn bell sound off
+  set nocompatible  " Use Vim defaults instead of 100% vi compatibility
+  set complete=.,w,b,u,t " Included files are excluded from default options
+  " TODO cscopeverbose
+  " set directory=     " Unnecessary since swapfile will be disabled after this
+  set display=lastline " Show @@@ in the last line if it is truncated
+  set encoding=utf8
+  set fillchars=vert:│,fold:· " Seperators for folds, windows, status
+  set formatoptions=tcqj
+  set nofsync
+  set hidden        " A buffer becomes hidden when it is abandoned
+  set history=10000 " Maintain maximum history
+  set hlsearch      " Highlight search results
+  set incsearch     " Makes search act like search in modern browsers
+  set laststatus=2  " Always show the status line
+  set listchars="tab:> ,trail:-,nbsp:+"
+  set nrformats=bin,hex
+  set ruler         " show the cursor position all the time
+  " Adds unix,slash to defaults and removes option from defaults
+  set sessionoptions=blank,buffers,curdir,folds,help,tabpages,winsize,terminal,unix,slash
+  set shortmess=filnxtToOF
+  set showcmd       " display incomplete commands
+  set sidescroll=1
+  set smarttab
+  set nostartofline
+  " TODO set switchbuf=uselast
+  set tabpagemax=50
+  set tags=./tags;,tags
+  set ttimeoutlen=50
+  set ttyfast
+  " TODO undodir
+  set viewoptions=folds,cursor,curdir,unix,slash
+  " TODO viminfo
+  set wildmenu		" display completion matches in a status line
+  set wildoptions=tagfile
+  if has('langmap') && exists('+langremap')
+    " Prevent that the langmap option applies to characters that result from a
+    " mapping.
+    set nolangremap
+  endif
+endif
 
-" Sets how many lines of history VIM has to remember - <command>
-set history=500
-
-" Set to auto read when a file is changed from the outside - <NA>
-set autoread
-
-" Turn backup off, since most stuff is in SVN, git et.c anyway - <NA>
+" Turn backup off for both nvim and vim
 set nobackup
-set nowb
+set nowritebackup
 set noswapfile
 
-" Turn on the WiLd menu - <command>
-set wildmenu
+
+" General
+" -------
+
+" Ignore compiled files
+set wildignore=*.o,*.a,*.so,*.pyc,*.swp,*.class
+" Ignore version control metdata
+if has("win16") || has("win32")
+  set wildignore+=.git\*,.hg\*,.svn\*,node_modules\*
+else
+  set wildignore+=*/.git/*,*/.hg/*,*/.svn/*,*/node_modules/*
+endif
+
+" Make yank and delete operations copy to clipboard
+set clipboard=unnamed
+
+" Use Unix as the standard file type
+set ffs=unix,dos,mac
+
+" Return to last edit position when opening files
+au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+
+" Ignore case when searching and be smart about it
+set ignorecase
+set smartcase
+
+" For regular expressions turn magic on
+set magic
+
+" Don't redraw while executing macros (good performance config)
+set lazyredraw
 
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Common Leader shortcuts
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" User interface
+" --------------
 
-" With a map leader it's possible to do extra key combinations
-" like <leader>w saves the current file
-"let mapleader = "\"
-"let g:mapleader = "\"
-
-" Fast saving - <command>
-"nmap <leader>w :w!<cr>
-
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => VIM user interface
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-" Show line numbers - <normal,insert,visual>
+" Show line numbers, relaive line numbers
 set number
 set rnu
 
-" set the special characters in a file
-"set showbreak=↪\ 
-set listchars=tab:→\ ,eol:↲,nbsp:␣,trail:·,space:·
-"set listchars=eol:$,tab:>-,trail:~,extends:>,precedes:<
-" shortcut to enable showing special characters
-map <leader><Tab> :set list!<cr>
+" Set the special characters in a file
+set listchars=tab:→\ ,nbsp:␣,trail:·,eol:↲,space:·
 
-" 80, 120 column divider
-let &colorcolumn="80,".join(range(120,999),",")
-
-" This works great, but highlights beyond 120 are weird
-" So for log type files with long lines, set only a single column
-autocmd BufRead,BufNewFile *.{txt,log,conf,tech} setlocal cc=80
+" 80, 100 column divider
+let &colorcolumn="80,".join(range(100,999),",")
+" Highlights beyond 100 look odd for wrapped lines, so for log type files with
+" long lines, set only a single column
+autocmd BufRead,BufNewFile *.{txt,log,conf,md} setlocal cc=80
 
 " Set 7 lines to the cursor - when moving vertically using j/k
 set scrolloff=7
 
-" Change the cursore in in insert mode for gnome-terminal >= 3.16
-if has("gui_running")
+" Change the cursore in in insert mode for newer terminals
+if has('nvim') || has("gui_running")
 else
     if has("autocmd")
       au VimEnter,InsertLeave * silent execute '!echo -ne "\e[1 q"' | redraw!
       au InsertEnter,InsertChange *
-        \ if v:insertmode == 'i' | 
+        \ if v:insertmode == 'i' |
         \   silent execute '!echo -ne "\e[5 q"' | redraw! |
         \ elseif v:insertmode == 'r' |
         \   silent execute '!echo -ne "\e[3 q"' | redraw! |
@@ -80,181 +135,38 @@ else
     endif
 endif
 
-" Avoid garbled characters in Chinese language windows OS
-let $LANG='en' 
-set langmenu=en
-source $VIMRUNTIME/delmenu.vim
-source $VIMRUNTIME/menu.vim
-
-" Ignore compiled files
-set wildignore=*.o,*~,*.pyc
-if has("win16") || has("win32")
-    set wildignore+=.git\*,.hg\*,.svn\*
-else
-    set wildignore+=*/.git/*,*/.hg/*,*/.svn/*,*/.DS_Store
-endif
-
-"Always show current position
-set ruler
-
 " Height of the command bar
 set cmdheight=2
 
-" A buffer becomes hidden when it is abandoned
-set hid
-
-" Make yank and delete operations copy to clipboard
-set clipboard=unnamed
-
-" Configure backspace so it acts as it should act
-set backspace=eol,start,indent
-set whichwrap+=<,>,h,l
-
-" Ignore case when searching
-set ignorecase
-
-" When searching try to be smart about cases 
-set smartcase
-
-" Highlight search results
-set hlsearch
-
-" Makes search act like search in modern browsers
-set incsearch 
-
-" Don't redraw while executing macros (good performance config)
-set lazyredraw 
-
-" For regular expressions turn magic on
-set magic
-
 " Show matching brackets when text indicator is over them
-set showmatch 
-" How many tenths of a second to blink when matching brackets
+set showmatch
 set mat=2
 
-" No annoying sound on errors
-set noerrorbells
-set novisualbell
-set t_vb=
-set tm=500
-
-" Properly disable sound on errors on MacVim
-if has("gui_macvim")
-    autocmd GUIEnter * set vb t_vb=
-endif
-
-" Add a bit extra margin to the left
+" Add a foldcolumn and enable folding
 set foldcolumn=1
-
-" Enable folding
 set foldmethod=syntax
 set foldlevel=40
 
-" Enable folding with the spacebar
-nnoremap <space> za
+" show tab and status lines always
+set stal=2
 
-" Switch foldmethods with the leader key
-map <leader>zi :set foldmethod=indent<cr>
-map <leader>zs :set foldmethod=syntax<cr>
-map <leader>zm :set foldmethod=manual<cr>
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Colors and Fonts
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-" Enable syntax highlighting
-syntax enable 
-
-" Enable 256 colors palette in Gnome Terminal
-if $COLORTERM == 'gnome-terminal'
-    set t_Co=256
-endif
-
-colorscheme default
-set background=light
-
-" Set extra options when running in GUI mode
-if has("gui_running")
-    set guioptions-=T
-    set guioptions-=e
-    set t_Co=256
-    set guitablabel=%M\ %t
-endif
-
-" Set utf8 as standard encoding and en_US as the standard language
-set encoding=utf8
-
-" Use Unix as the standard file type
-set ffs=unix,dos,mac
-
-" Set font according to system
-if has("mac") || has("macunix")
-    set gfn=Hack:h14,Source\ Code\ Pro:h15,Menlo:h15
-elseif has("win16") || has("win32")
-    set gfn=Hack:h14,Source\ Code\ Pro:h12,Bitstream\ Vera\ Sans\ Mono:h11
-elseif has("gui_gtk2")
-    set gfn=Bitstream\ Vera\ Sans\ Mono\ 11
-elseif has("linux")
-    set gfn=Hack\ 11,Source\ Code\ Pro\ 11,Bitstream\ Vera\ Sans\ Mono\ 11
-elseif has("unix")
-    set gfn=Monospace\ 11
-endif
-
-" Disable scrollbars (real hackers don't use scrollbars for navigation!)
-set guioptions-=r
-set guioptions-=R
-set guioptions-=l
-set guioptions-=L
-
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Text, tab and indent related
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Use spaces instead of tabs
 set expandtab
-
-" Be smart when using tabs ;)
-set smarttab
-
-" 1 tab == 4 spaces
 set shiftwidth=4
 set tabstop=4
 
-" Linebreak on 500 characters
-set lbr
-set tw=500
-
-set ai "Auto indent
-set si "Smart indent
-set wrap "Wrap lines
+" Fixed width rhs column which includes sign
+set signcolumn=yes
 
 
-""""""""""""""""""""""""""""""
-" => Visual mode related
-""""""""""""""""""""""""""""""
+" User interaction changes
+" ------------------------
+
+" Allow h,l keys to move up-down when at end or begining of lines
+set whichwrap+=h,l
+
 " Visual mode pressing * searches for the current selection
-" Super useful! From an idea by Michael Naumann
 vnoremap <silent> * :<C-u>call VisualSelection('', '')<CR>/<C-R>=@/<CR><CR>
-
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Moving around, tabs, windows and buffers
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Map <Space> to / (search) and Ctrl-<Space> to ? (backwards search)
-"map <space> /
-"map <c-space> ?
-
-" Disable highlight when <leader><cr> is pressed
-map <silent> <leader><cr> :noh<cr>
-
-"""" Windows
-
-" Smart way to move between windows
-"map <C-j> <C-W>j
-"map <C-k> <C-W>k
-"map <C-h> <C-W>h
-"map <C-l> <C-W>l
 
 " Page up , page down
 nnoremap <C-k> <C-u>
@@ -264,18 +176,58 @@ nnoremap <C-j> <C-d>
 map <C-h> ^
 map <C-l> $
 
+" Move a line of text using ALT+[jk] or Command+[jk] on mac
+nmap <M-j> mz:m+<cr>`z
+nmap <M-k> mz:m-2<cr>`z
+vmap <M-j> :m'>+<cr>`<my`>mzgv`yo`z
+vmap <M-k> :m'<-2<cr>`>my`<mzgv`yo`z
+if has("mac") || has("macunix")
+  nmap <D-j> <M-j>
+  nmap <D-k> <M-k>
+  vmap <D-j> <M-j>
+  vmap <D-k> <M-k>
+endif
+
+" Jumping back, forward
+" Ctrl-i, Ctrl-o are default mapings
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Moving around, tabs, windows and buffers
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 """" Buffers
 
-" Close the current buffer
-map <leader>bd :Bclose<cr>:tabclose<cr>gT
-
-" Close all the buffers
-map <leader>ba :bufdo bd<cr>
-
-map <leader>l :bnext<cr>
-map <leader>h :bprevious<cr>
+"  " Close the current buffer
+"  map <leader>bd :Bclose<cr>:tabclose<cr>gT
+"
+"  " Close all the buffers
+"  map <leader>ba :bufdo bd<cr>
+"
+"  map <leader>l :bnext<cr>
+"  map <leader>h :bprevious<cr>
 
 """" Tabs
+
+
+" shortcut to enable showing special characters (see listchars)
+map <leader><Tab> :set list!<cr>
+" Enable folding with the spacebar (see foldmethod)
+nnoremap <space> za
+" Switch foldmethods with the leader key
+map <leader>zi :set foldmethod=indent<cr>
+map <leader>zs :set foldmethod=syntax<cr>
+map <leader>zm :set foldmethod=manual<cr>
+
+
+" Disable highlight when <leader><cr> is pressed
+map <silent> <leader><cr> :noh<cr>
+
+
+" Shows jumps
+map <leader>j :jumps<cr>
+
+
+
 
 " Buffers to tabs
 map <leader>tb :tab ball<cr>
@@ -284,8 +236,8 @@ map <leader>tb :tab ball<cr>
 map <leader>tn :tabnew<cr>
 "map <leader>to :tabonly<cr>
 "map <leader>tc :tabclose<cr>
-"map <leader>tm :tabmove 
-"map <leader>t<leader> :tabnext 
+"map <leader>tm :tabmove
+"map <leader>t<leader> :tabnext
 
 " Tab switching - Go to tab by number
 " gt - Next tab
@@ -303,8 +255,8 @@ noremap <leader>0 :tabfirst<cr>
 
 " Let 'tt' toggle between this and the last accessed tab
 let g:lasttab = 1
-nmap <Leader>tt :exe "tabn ".g:lasttab<CR>
 au TabLeave * let g:lasttab = tabpagenr()
+nmap <Leader>tt :exe "tabn ".g:lasttab<CR>
 
 " Opens a new tab with the current buffer's path
 " Super useful when editing files in the same directory
@@ -318,107 +270,18 @@ map <leader>ts :tab split<cr>
 " Switch CWD to the directory of the open buffer
 map <leader>cd :cd %:p:h<cr>:pwd<cr>
 
-" show tabline always 
-set stal=2
-
-" Return to last edit position when opening files (You want this!)
-au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
 
 
-""""""""""""""""""""""""""""""
-" => Status line
-""""""""""""""""""""""""""""""
-" Always show the status line
-set laststatus=2
-
-" Format the status line
-set statusline=\ %{HasPaste()}%F%m%r%h\ %w\ \ CWD:\ %r%{getcwd()}%h\ \ \ Line:\ %l\ \ Column:\ %c
-
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Editing mappings
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" Remap VIM 0 to first non-blank character
-"map 0 ^ " Rishin - Don't want same behaviour of 0 and ^
-
-" Move a line of text using ALT+[jk] or Command+[jk] on mac
-nmap <M-j> mz:m+<cr>`z
-nmap <M-k> mz:m-2<cr>`z
-vmap <M-j> :m'>+<cr>`<my`>mzgv`yo`z
-vmap <M-k> :m'<-2<cr>`>my`<mzgv`yo`z
-
-if has("mac") || has("macunix")
-  nmap <D-j> <M-j>
-  nmap <D-k> <M-k>
-  vmap <D-j> <M-j>
-  vmap <D-k> <M-k>
-endif
-
-" Visual/Normal mode copy paste
-" Note pasting with Ctrl-V in normal mode pastes before cursor as opposed to
-" after cursore with p
-vnoremap <C-c> "+y
-vnoremap <C-v> "+gP
-" bad idea to have c-v in normal mode as visual block is mapped to the key
-"noremap <C-v> "+gP
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Editing jumps
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-" Shows jumps
-map <leader>j :jumps<cr>
-
-" Jumping back, forward
-" Ctrl-i, Ctrl-o are default mapings
-
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Ag searching and cope displaying
-"    requires ag.vim - it's much better than vimgrep/grep
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" When you press gv you Ag after the selected text
-vnoremap <silent> gv :call VisualSelection('gv', '')<CR>
-
-" Open Ag and put the cursor in the right position
-map <leader>g :Ag 
-
-" When you press <leader>r you can search and replace the selected text
-vnoremap <silent> <leader>r :call VisualSelection('replace', '')<CR>
-
-" Do :help cope if you are unsure what cope is. It's super useful!
-"
-" When you search with Ag, display your results in cope by doing:
-"   <leader>cc
-"
-" To go to the next search result do:
-"   <leader>n
-"
-" To go to the previous search results do:
-"   <leader>p
-"
-map <leader>cc :botright cope<cr>
-map <leader>co ggVGy:tabnew<cr>:set syntax=qf<cr>pgg
-map <leader>n :cn<cr>
-map <leader>p :cp<cr>
-
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Spell checking
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Pressing ,ss will toggle and untoggle spell checking
 map <leader>ss :setlocal spell!<cr>
 
-" Shortcuts using <leader>
+" Spellcheck shortcuts using <leader>
 map <leader>sn ]s
 map <leader>sp [s
 map <leader>sa zg
 map <leader>s? z=
 
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Misc
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 " Remove the Windows ^M - when the encodings gets messed up
 noremap <Leader>m mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
@@ -441,7 +304,7 @@ function! CmdLine(str)
     exe "menu Foo.Bar :" . a:str
     emenu Foo.Bar
     unmenu Foo
-endfunction 
+endfunction
 
 function! VisualSelection(direction, extra_filter) range
     let l:saved_reg = @"
@@ -489,42 +352,51 @@ function! <SID>BufcloseCloseIt()
    endif
 endfunction
 
-" Make VIM remember position in file after reopen
-" if has("autocmd")
-"   au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
-"endif
-
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins - Package manager
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" Installation 
+" Installation
 " curl -fLo ~/.vim/autoload/plug.vim https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
 call plug#begin()
 " ### lang-support
-" vim-polyglot
+"if has('nvim')
+"    Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+"else
 Plug 'sheerun/vim-polyglot'
+"endif
 
 " ### colorschemes
-Plug 'tomasr/molokai'
-Plug 'joshdick/onedark.vim'
-Plug 'w0ng/vim-hybrid'
+Plug 'altercation/vim-colors-solarized'  " most popular vim theme (adopted from terminal theme solaris )
+Plug 'tomasr/molokai'                    " port of monokai theme for TextMate
+Plug 'rakr/vim-one'                      " port of default atom theme
+Plug 'tomasiser/vim-code-dark'           " port of dark+ them from vscode
+Plug 'w0ng/vim-hybrid'                   " personal choice
+Plug 'nanotech/jellybeans.vim'           " popular vim colorscheme
 
 " ### interface
 Plug 'vim-airline/vim-airline'
+if has('nvim')
+  Plug 'kyazdani42/nvim-web-devicons'     " Coloured icons)
+  " Plug 'ryanoasis/vim-devicons' Icons without colours
+  Plug 'akinsho/nvim-bufferline.lua'
+endif
 Plug 'scrooloose/nerdtree'
 Plug 'majutsushi/tagbar'
-Plug 'ctrlpvim/ctrlp.vim'
+Plug 'junegunn/fzf'                      " Plug 'Mofiqul/vscode.nvim' replaced by fzf
 Plug 'jiangmiao/auto-pairs'
 
 " ### completion
-" vim-snippets with ultisnips engine
 Plug 'honza/vim-snippets'
 Plug 'sirver/ultisnips'
-" deoplete
+" deoplete related
 if has('nvim')
+  Plug 'autozimu/LanguageClient-neovim', {
+    \ 'branch': 'next',
+    \ 'do': 'bash install.sh',
+    \ }
   Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 else
   Plug 'Shougo/deoplete.nvim'
@@ -533,8 +405,9 @@ else
 endif
 
 " ### syntax-check
-" ale
 Plug 'w0rp/ale'
+
+"Plug 'OmniSharp/omnisharp-vim'
 
 call plug#end()
 
@@ -545,25 +418,6 @@ call plug#end()
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 "   curl -LSso ~/.vim/plugin/pathogen.vim http://cscope.sourceforge.net/cscope_maps.vim
-
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Plugins - Filetype
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-
-" Enable filetype plugins
-filetype on
-filetype plugin on
-filetype indent on
-
-" Delete trailing white space on save, useful for Python and CoffeeScript ;)
-func! DeleteTrailingWS()
-  exe "normal mz"
-  %s/\s\+$//ge
-  exe "normal `z"
-endfunc
-autocmd BufWrite *.py :call DeleteTrailingWS()
-autocmd BufWrite *.coffee :call DeleteTrailingWS()
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -586,16 +440,10 @@ if (empty($TMUX))
   endif
 endif
 
-" onedark color scheme for nvim and hybrid for vim
-"if has('nvim')
-    colorscheme onedark
-"else
-"    "let g:hybrid_custom_term_colors = 1
-"    let g:hybrid_reduced_contrast = 1
-"    colorscheme hybrid
-"    set background=dark
-"    
-"endif
+" Set users choice of colorscheme
+let g:jellybeans_use_lowcolor_black = 1
+colorscheme jellybeans
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins - Interface
@@ -605,17 +453,18 @@ endif
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#tab_nr_type = 1
 
-" nerdtree
-"map <C-n> :NERDTreeToggle<CR>
-map <C-n> :NERDTreeFind<CR>
+"" nerdtree
+map <C-n> :NERDTreeToggle<CR>
+"map <C-t> :NERDTreeFind<CR>
 
-" tagbar
+"" tagbar
 nmap <F8> :TagbarToggle<CR>
 
-" ctrlp.vim
+"" fzf
+nmap <C-p> :FZF<CR>
 
-" auto-pairs
-let g:AutoPairsMultilineClose = 0
+"" auto-pairs
+let g:AutoPairsMultilineClose = 0 " doesn't delete next line brace when deleting current one
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins - Completion / Snippets
@@ -627,26 +476,58 @@ let g:UltiSnipsExpandTrigger="<C-space>"
 let g:UltiSnipsJumpForwardTrigger="<C-space>"
 let g:UltiSnipsJumpBackwardTrigger="<S-space>"
 
-" Deoplete
+
+"" LanguageClient-neovim (deoplete source for lsp servers)
+if has('nvim')
+  let g:LanguageClient_serverCommands = {
+        \ 'cpp': [ 'clangd' ],
+        \ }
+
+  let g:LanguageClient_useVirtualText='No'
+  let g:LanguageClient_diagnosticsEnable = 0 " Diagnostics are taken from ALE
+
+  " note that if you are using Plug mapping you should not use `noremap` mappings.
+  nmap <F5> <Plug>(lcn-menu)
+  " Or map each action separately
+  nmap <silent>K <Plug>(lcn-hover)
+  nmap <silent> gd <Plug>(lcn-definition)
+  nmap <silent> <F2> <Plug>(lcn-rename)
+endif
+
+"" Deoplete
 let g:deoplete#enable_at_startup = 1
 " tab completion with deoplete
 inoremap <silent><expr> <Tab>
       \ pumvisible() ? "\<C-n>" : "\<TAB>"
 
+set completeopt-=preview " vim ins-completeion subsystem option to disable scratch buffers
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins - Syntax / Linter
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" fixed width rhs column which includes sign
-set signcolumn=yes
-
 " ALE
 " disable lint on text change
 let g:ale_lint_on_text_changed = 0
-" C/CPP
+" Limit C/CPP linters
 let g:ale_linters = {
-\   'cpp': ['clang', 'gcc'],
+\   'cpp': ['cc'],
 \}
 let g:ale_c_parse_compile_commands = 1
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" => Plugins - Filetype
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+" Delete trailing white space on save. Enabled for python and cxx.
+func! DeleteTrailingWS()
+  exe "normal mz"
+  %s/\s\+$//ge
+  exe "normal `z"
+endfunc
+autocmd BufWrite *.py :call DeleteTrailingWS()
+autocmd BufWrite *.cpp :call DeleteTrailingWS()
+autocmd BufWrite *.hpp :call DeleteTrailingWS()
+autocmd BufWrite *.c :call DeleteTrailingWS()
+autocmd BufWrite *.h :call DeleteTrailingWS()
 
