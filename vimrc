@@ -63,63 +63,34 @@ else
   endif
 endif
 
+
+" Not-so-defacto standard general settings
+" ----------------------------------------
+
 " Turn backup off for both nvim and vim
 set nobackup
 set nowritebackup
 set noswapfile
-
-
-" General
-" -------
-
-" Ignore compiled files
-set wildignore=*.o,*.a,*.so,*.pyc,*.swp,*.class
-" Ignore version control metdata
-if has("win16") || has("win32")
-  set wildignore+=.git\*,.hg\*,.svn\*,node_modules\*
-else
-  set wildignore+=*/.git/*,*/.hg/*,*/.svn/*,*/node_modules/*
-endif
-
 " Make yank and delete operations copy to clipboard
 set clipboard=unnamed
-
 " Use Unix as the standard file type
 set ffs=unix,dos,mac
-
-" Return to last edit position when opening files
-au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
-
 " Ignore case when searching and be smart about it
 set ignorecase
 set smartcase
-
 " For regular expressions turn magic on
 set magic
-
 " Don't redraw while executing macros (good performance config)
 set lazyredraw
 
 
-" User interface
-" --------------
+" Not-so-defacto standard UI settings
+" -----------------------------------
 
-" Show line numbers, relaive line numbers
+" Show line numbers
 set number
-set rnu
-
-" Set the special characters in a file
-set listchars=tab:→\ ,nbsp:␣,trail:·,eol:↲,space:·
-
-" 80, 100 column divider
-let &colorcolumn="80,".join(range(100,999),",")
-" Highlights beyond 100 look odd for wrapped lines, so for log type files with
-" long lines, set only a single column
-autocmd BufRead,BufNewFile *.{txt,log,conf,md} setlocal cc=80
-
 " Set 7 lines to the cursor - when moving vertically using j/k
 set scrolloff=7
-
 " Change the cursore in in insert mode for newer terminals
 if has('nvim') || has("gui_running")
 else
@@ -134,59 +105,130 @@ else
       au VimLeave * silent execute '!echo -ne "\e[ q"' | redraw!
     endif
 endif
-
 " Height of the command bar
 set cmdheight=2
-
 " Show matching brackets when text indicator is over them
 set showmatch
 set mat=2
-
 " Add a foldcolumn and enable folding
 set foldcolumn=1
 set foldmethod=syntax
 set foldlevel=40
-
 " show tab and status lines always
 set stal=2
-
 " Use spaces instead of tabs
 set expandtab
-set shiftwidth=4
-set tabstop=4
-
-" Fixed width rhs column which includes sign
+" Fixed width column which includes sign (error, warnings etc)
 set signcolumn=yes
-
-
-" User interaction changes
-" ------------------------
-
 " Allow h,l keys to move up-down when at end or begining of lines
 set whichwrap+=h,l
 
+
+" General settings (specific to user)
+" -----------------------------------
+
+" Ignore compiled files
+set wildignore=*.o,*.a,*.so,*.pyc,*.swp,*.class
+" Ignore version control metdata
+if has("win16") || has("win32")
+  set wildignore+=.git\*,.hg\*,.svn\*,node_modules\*
+else
+  set wildignore+=*/.git/*,*/.hg/*,*/.svn/*,*/node_modules/*
+endif
+" Return to last edit position when opening files
+au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+
+
+" UI settings (specific to user)
+" ------------------------------
+
+" Show line numbers, relaive line numbers
+set rnu
+" Set the special characters in a file
+set listchars=tab:→\ ,nbsp:␣,trail:·,eol:↲,space:·
+" 80, 100 column divider
+let &colorcolumn="80,".join(range(100,999),",")
+" Highlights beyond 100 look odd for wrapped lines, so for log type files with
+" long lines, set only a single column
+autocmd BufRead,BufNewFile *.{txt,log,conf,md} setlocal cc=80
 " Visual mode pressing * searches for the current selection
 vnoremap <silent> * :<C-u>call VisualSelection('', '')<CR>/<C-R>=@/<CR><CR>
 
+" UI settings (specific to user and file type)
+" --------------------------------------------
+set shiftwidth=4 " TODO file specific tabs (eg. 2 for cpp but 4 for java)
+set tabstop=4
+
+
+" Not-so-defacto standard key mappings
+" ------------------------------------
+
+" See https://hea-www.harvard.edu/~fine/Tech/vi.html
+" See https://code.visualstudio.com/shortcuts/keyboard-shortcuts-linux.pdf 
+
+nnoremap <M-j> ddp
+nnoremap <M-k> ddkP
+nnoremap <C-j> <C-e>
+nnoremap <C-k> <C-y>
+nnoremap <space> za
+
+
+" vim(normal)     vscode              function
+" ------------------------------------------------------------
+" dd              Ctrl+X              Cut line (empty selection)
+" yy              Ctrl+C              Copy line (empty selection)
+" <M-j>           Alt+ ↓              Move line down
+" <M-k>           Alt+ ↑              Move line up
+"                 Ctrl+Shift+K        Delete line
+" o               Ctrl+Enter          Insert line below
+" O               Ctrl+Shift+Enter    Insert line above
+" %               Ctrl+Shift+\        Jump to matching bracket
+" >>              Ctrl+]              Indent/Outdent line
+" >>              Ctrl+[              Indent/Outdent line
+" 0 / Home        Home                Go to beginning of line
+" ^                                   Go to beginning of line first char
+" $ / End         End                 Go to end of line
+" gg              Ctrl+ Home          Go to beginning of file
+" G               Ctrl + End          Go to end of file
+" <C-j>/<C-k>     Ctrl+ ↑ / ↓         Scroll line up/down
+"                 Alt+ PgUp / PgDn    Scroll page up/down
+" zc / zo         Ctrl+Shift+ [ / ]   Fold/unfold region
+" za / <space>                        Toggle fold/unfold region
+"                 Ctrl+K Ctrl+ [      Fold all subregions
+" zO              Ctrl+K Ctrl+ ]      Unfold all subregions     *1
+" zM              Ctrl+K Ctrl+0       Fold all regions
+" zR              Ctrl+K Ctrl+J       Unfold all regions
+"                 Ctrl+K Ctrl+C       Add line comment (comment whole line)
+"                 Ctrl+K Ctrl+U       Remove line comment (uncomment whole line)
+"                 Ctrl+/              Toggle line comment
+"                 Ctrl+Shift+A        Toggle block comment
+" :set wrap!<cr>  Alt+Z               Toggle word wrap (line wrap?)
+" .                                   Repeat last action
+
+" *1 - For vim the cursor needs to be on the fold
+
+
+
+
 " Page up , page down
-nnoremap <C-k> <C-u>
-nnoremap <C-j> <C-d>
+"nnoremap <C-k> <C-u>
+"nnoremap <C-j> <C-d>
 
 " Move to begining or end of line
-map <C-h> ^
-map <C-l> $
+"map <C-h> ^
+"map <C-l> $
 
 " Move a line of text using ALT+[jk] or Command+[jk] on mac
-nmap <M-j> mz:m+<cr>`z
-nmap <M-k> mz:m-2<cr>`z
-vmap <M-j> :m'>+<cr>`<my`>mzgv`yo`z
-vmap <M-k> :m'<-2<cr>`>my`<mzgv`yo`z
-if has("mac") || has("macunix")
-  nmap <D-j> <M-j>
-  nmap <D-k> <M-k>
-  vmap <D-j> <M-j>
-  vmap <D-k> <M-k>
-endif
+"""""" nmap <M-j> mz:m+<cr>`z
+"""""" nmap <M-k> mz:m-2<cr>`z
+"""""" vmap <M-j> :m'>+<cr>`<my`>mzgv`yo`z
+"""""" vmap <M-k> :m'<-2<cr>`>my`<mzgv`yo`z
+"""""" if has("mac") || has("macunix")
+""""""   nmap <D-j> <M-j>
+""""""   nmap <D-k> <M-k>
+""""""   vmap <D-j> <M-j>
+""""""   vmap <D-k> <M-k>
+"""""" endif
 
 " Jumping back, forward
 " Ctrl-i, Ctrl-o are default mapings
@@ -211,8 +253,6 @@ endif
 
 " shortcut to enable showing special characters (see listchars)
 map <leader><Tab> :set list!<cr>
-" Enable folding with the spacebar (see foldmethod)
-nnoremap <space> za
 " Switch foldmethods with the leader key
 map <leader>zi :set foldmethod=indent<cr>
 map <leader>zs :set foldmethod=syntax<cr>
