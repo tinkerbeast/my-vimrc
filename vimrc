@@ -401,53 +401,34 @@ endfunction
 " curl -fLo ~/.vim/autoload/plug.vim https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
 call plug#begin()
+
 " ### lang-support
-"if has('nvim')
-"    Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
-"else
 Plug 'sheerun/vim-polyglot'
-"endif
 
 " ### colorschemes
 Plug 'altercation/vim-colors-solarized'  " most popular vim theme (adopted from terminal theme solaris )
 Plug 'tomasr/molokai'                    " port of monokai theme for TextMate
-Plug 'rakr/vim-one'                      " port of default atom theme
-Plug 'tomasiser/vim-code-dark'           " port of dark+ them from vscode
-Plug 'w0ng/vim-hybrid'                   " personal choice
-Plug 'nanotech/jellybeans.vim'           " popular vim colorscheme
+Plug 'joshdick/onedark.vim'              " port of default atom theme (similar to sublime3)
+Plug 'morhetz/gruvbox'                   " popular vim colorscheme (solarized with blue filter)
+"Plug 'chriskempson/base16-vim'           " multiple 16bit colorshemes
+Plug 'nanotech/jellybeans.vim'           " popular vim colorscheme (based on classic vim)
+Plug 'jnurmine/zenburn'                  " popular vim colorscheme (low contrast)
 
 " ### interface
 Plug 'vim-airline/vim-airline'
-if has('nvim')
-  Plug 'kyazdani42/nvim-web-devicons'     " Coloured icons)
-  " Plug 'ryanoasis/vim-devicons' Icons without colours
-  Plug 'akinsho/nvim-bufferline.lua'
-endif
 Plug 'scrooloose/nerdtree'
 Plug 'majutsushi/tagbar'
-Plug 'junegunn/fzf'                      " Plug 'Mofiqul/vscode.nvim' replaced by fzf
+Plug 'kien/ctrlp.vim'                    " Plug 'junegunn/fzf' replaced by ctrlp
 Plug 'jiangmiao/auto-pairs'
 
 " ### completion
-Plug 'honza/vim-snippets'
-Plug 'sirver/ultisnips'
-" deoplete related
-if has('nvim')
-  Plug 'autozimu/LanguageClient-neovim', {
-    \ 'branch': 'next',
-    \ 'do': 'bash install.sh',
-    \ }
-  Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
-else
-  Plug 'Shougo/deoplete.nvim'
-  Plug 'roxma/nvim-yarp'
-  Plug 'roxma/vim-hug-neovim-rpc'
-endif
+Plug 'sirver/ultisnips'                  " Snippet engine
+Plug 'honza/vim-snippets'                " Snippet repo
+" TODO: deoplete or supertab or youcompleteme
 
 " ### syntax-check
-Plug 'w0rp/ale'
-
-"Plug 'OmniSharp/omnisharp-vim'
+Plug 'scrooloose/syntastic'              " vimscript based checker with linter support
+"Plug 'w0rp/ale'                          " lsp based syntax checker
 
 call plug#end()
 
@@ -465,9 +446,9 @@ call plug#end()
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 "Use 24-bit (true-color) mode in Vim/Neovim when outside tmux.
+if (empty($TMUX))
 "If you're using tmux version 2.2 or later, you can remove the outermost $TMUX check and use tmux's 24-bit color support
 "(see < http://sunaku.github.io/tmux-24bit-color.html#usage > for more information.)
-if (empty($TMUX))
   if (has("nvim"))
     "For Neovim 0.1.3 and 0.1.4 < https://github.com/neovim/neovim/pull/2198 >
     let $NVIM_TUI_ENABLE_TRUE_COLOR=1
@@ -481,8 +462,9 @@ if (empty($TMUX))
 endif
 
 " Set users choice of colorscheme
-let g:jellybeans_use_lowcolor_black = 1
-colorscheme jellybeans
+let g:onedark_terminal_italics = 1
+let g:airline_theme='onedark'
+colorscheme onedark
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -495,13 +477,18 @@ let g:airline#extensions#tabline#tab_nr_type = 1
 
 "" nerdtree
 map <C-n> :NERDTreeToggle<CR>
-"map <C-t> :NERDTreeFind<CR>
+map <leader>n :NERDTreeFind<CR>
 
 "" tagbar
 nmap <F8> :TagbarToggle<CR>
 
-"" fzf
-nmap <C-p> :FZF<CR>
+"" ctrlp
+let g:ctrlp_custom_ignore = {
+    \ 'dir':  '\v[\/]\.(git|hg|svn)$',
+    \ 'file': '\v\.(o|exe|so|dll|a|pyc|class)$',
+    \ 'link': 'some_bad_symbolic_links',
+    \ }
+" TODO: link specification for ctrlp
 
 "" auto-pairs
 let g:AutoPairsMultilineClose = 0 " doesn't delete next line brace when deleting current one
@@ -511,49 +498,48 @@ let g:AutoPairsMultilineClose = 0 " doesn't delete next line brace when deleting
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 " vim-snippets with ultisnips engine
-" remapped from tab to avoid conflict with tab completion
-let g:UltiSnipsExpandTrigger="<C-space>"
-let g:UltiSnipsJumpForwardTrigger="<C-space>"
-let g:UltiSnipsJumpBackwardTrigger="<S-space>"
+" TODO:
 
 
-"" LanguageClient-neovim (deoplete source for lsp servers)
-if has('nvim')
-  let g:LanguageClient_serverCommands = {
-        \ 'cpp': [ 'clangd' ],
-        \ }
-
-  let g:LanguageClient_useVirtualText='No'
-  let g:LanguageClient_diagnosticsEnable = 0 " Diagnostics are taken from ALE
-
-  " note that if you are using Plug mapping you should not use `noremap` mappings.
-  nmap <F5> <Plug>(lcn-menu)
-  " Or map each action separately
-  nmap <silent>K <Plug>(lcn-hover)
-  nmap <silent> gd <Plug>(lcn-definition)
-  nmap <silent> <F2> <Plug>(lcn-rename)
-endif
-
-"" Deoplete
-let g:deoplete#enable_at_startup = 1
-" tab completion with deoplete
-inoremap <silent><expr> <Tab>
-      \ pumvisible() ? "\<C-n>" : "\<TAB>"
-
-set completeopt-=preview " vim ins-completeion subsystem option to disable scratch buffers
+" TODO: remove deoplete settings
+""  " LanguageClient-neovim (deoplete source for lsp servers)
+"" if has('nvim')
+""   let g:LanguageClient_serverCommands = {
+""         \ 'cpp': [ 'clangd' ],
+""         \ }
+"" 
+""   let g:LanguageClient_useVirtualText='No'
+""   let g:LanguageClient_diagnosticsEnable = 0 " Diagnostics are taken from ALE
+"" 
+""   " note that if you are using Plug mapping you should not use `noremap` mappings.
+""   nmap <F5> <Plug>(lcn-menu)
+""   " Or map each action separately
+""   nmap <silent>K <Plug>(lcn-hover)
+""   nmap <silent> gd <Plug>(lcn-definition)
+""   nmap <silent> <F2> <Plug>(lcn-rename)
+"" endif
+"" 
+"" "" Deoplete
+"" let g:deoplete#enable_at_startup = 1
+"" " tab completion with deoplete
+"" inoremap <silent><expr> <Tab>
+""       \ pumvisible() ? "\<C-n>" : "\<TAB>"
+"" 
+"" set completeopt-=preview " vim ins-completeion subsystem option to disable scratch buffers
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins - Syntax / Linter
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" ALE
-" disable lint on text change
-let g:ale_lint_on_text_changed = 0
-" Limit C/CPP linters
-let g:ale_linters = {
-\   'cpp': ['cc'],
-\}
-let g:ale_c_parse_compile_commands = 1
+" TODO: make ale settings conditional
+"  " ALE
+"  " disable lint on text change
+"  let g:ale_lint_on_text_changed = 0
+"  " Limit C/CPP linters
+"  let g:ale_linters = {
+"  \   'cpp': ['cc'],
+"  \}
+"  let g:ale_c_parse_compile_commands = 1
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins - Filetype
