@@ -6,6 +6,28 @@
 "  Tabs in vim - vim.wikia.com/wiki/Using_tab_pages
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+" Per-user switches (shared vimrc)
+" --------------------------------
+" Everyone can override these WITHOUT editing this file: put the `let` in your
+" own ~/.vimrc (or init.vim) BEFORE sourcing this file, e.g.
+"     let g:vimrc_colorscheme = 'sonokai'
+"     source /path/to/this/vimrc
+" Or just edit the defaults below in your own copy.
+"
+"   g:vimrc_colorscheme  Colorscheme to start with. Installed choices:
+"                        gruvbox-material (default), sonokai, codedark,
+"                        onedark, molokai, solarized, jellybeans, zenburn.
+"                        Switch live with :colorscheme <name>; the airline
+"                        status line theme follows automatically.
+"   g:vimrc_truecolor    1 = use 24-bit colour (default). Set 0 for terminals
+"                        that show garbled colours (old PuTTY, linux console).
+"   g:vimrc_ultisnips    1 = load UltiSnips + vim-snippets (default). Set 0 to
+"                        turn snippets off, e.g. once Copilot owns <Tab>.
+let g:vimrc_colorscheme = get(g:, 'vimrc_colorscheme', 'gruvbox-material')
+let g:vimrc_truecolor   = get(g:, 'vimrc_truecolor', 1)
+let g:vimrc_ultisnips   = get(g:, 'vimrc_ultisnips', 1)
+
+
 " Defacto standards
 " -----------------
 
@@ -24,13 +46,15 @@ else
   set belloff=all   " Turn bell sound off
   set nocompatible  " Use Vim defaults instead of 100% vi compatibility
   set complete=.,w,b,u,t " Included files are excluded from default options
-  " TODO cscopeverbose
+  " cscope is not available in Neovim, so guard on the feature, not on nvim.
+  if has('cscope')
+    set cscopeverbose " Neovim enables this by default; match it in Vim
+  endif
   " set directory=     " Unnecessary since swapfile will be disabled after this
   set display=lastline " Show @@@ in the last line if it is truncated
   set encoding=utf8
-  set fillchars=vert:│,fold:· " Seperators for folds, windows, status
+  set fillchars=vert:│,fold:· " Separators for folds, windows, status
   set formatoptions=tcqj
-  set nofsync
   set hidden        " A buffer becomes hidden when it is abandoned
   set history=10000 " Maintain maximum history
   set hlsearch      " Highlight search results
@@ -71,17 +95,42 @@ endif
 set nobackup
 set nowritebackup
 set noswapfile
+" Persist undo/redo history between sessions
+if !has('nvim')
+  let s:undodir = expand('~/.vim/undo')
+  if !isdirectory(s:undodir) | call mkdir(s:undodir, 'p', 0700) | endif
+  let &undodir = s:undodir . '//'    " // = full-path filenames, no collisions
+endif
+set undofile
 " Make yank and delete operations copy to clipboard
-set clipboard=unnamed
+if has('clipboard')
+  if has('unnamedplus')
+    set clipboard=unnamedplus
+  else
+    set clipboard=unnamed
+  endif
+else
+  " No +clipboard in this Vim (e.g. Debian vim-nox): in Visual mode, \y pipes
+  " the selection to an external clipboard tool, if one is installed.
+  if !empty($WAYLAND_DISPLAY) && executable('wl-copy')
+    xnoremap <silent> <leader>y :w !wl-copy<CR><CR>
+  elseif executable('xclip')
+    xnoremap <silent> <leader>y :w !xclip -selection clipboard<CR><CR>
+  elseif executable('xsel')
+    xnoremap <silent> <leader>y :w !xsel --clipboard --input<CR><CR>
+  elseif executable('clip.exe')
+    xnoremap <silent> <leader>y :w !clip.exe<CR><CR>
+  elseif executable('pbcopy')
+    xnoremap <silent> <leader>y :w !pbcopy<CR><CR>
+  endif
+endif
 " Use Unix as the standard file type
-set ffs=unix,dos,mac
+set ffs=unix,dos
 " Ignore case when searching and be smart about it
 set ignorecase
 set smartcase
 " For regular expressions turn magic on
 set magic
-" Don't redraw while executing macros (good performance config)
-set lazyredraw
 
 
 " Not-so-defacto standard UI settings
@@ -91,19 +140,14 @@ set lazyredraw
 set number
 " Set 7 lines to the cursor - when moving vertically using j/k
 set scrolloff=7
-" Change the cursore in in insert mode for newer terminals
-if has('nvim') || has("gui_running")
-else
-    if has("autocmd")
-      au VimEnter,InsertLeave * silent execute '!echo -ne "\e[1 q"' | redraw!
-      au InsertEnter,InsertChange *
-        \ if v:insertmode == 'i' |
-        \   silent execute '!echo -ne "\e[5 q"' | redraw! |
-        \ elseif v:insertmode == 'r' |
-        \   silent execute '!echo -ne "\e[3 q"' | redraw! |
-        \ endif
-      au VimLeave * silent execute '!echo -ne "\e[ q"' | redraw!
-    endif
+" Change the cursor shape per mode for newer terminals (Vim only; Neovim and
+" GUIs handle this themselves).
+if !(has('nvim') || has("gui_running"))
+  let &t_EI = "\e[1 q"   " Normal  : blinking block
+  let &t_SI = "\e[5 q"   " Insert  : blinking bar
+  let &t_SR = "\e[3 q"   " Replace : blinking underline
+  let &t_ti = &t_ti . "\e[1 q"   " start in block cursor
+  let &t_te = "\e[ q" . &t_te    " restore terminal's own cursor on exit
 endif
 " Height of the command bar
 set cmdheight=2
@@ -112,7 +156,7 @@ set showmatch
 set mat=2
 " Add a foldcolumn and enable folding
 set foldcolumn=1
-set foldmethod=syntax
+set foldmethod=indent
 set foldlevel=40
 " show tab and status lines always
 set stal=2
@@ -120,7 +164,7 @@ set stal=2
 set expandtab
 " Fixed width column which includes sign (error, warnings etc)
 set signcolumn=yes
-" Allow h,l keys to move up-down when at end or begining of lines
+" Allow h,l keys to move up-down when at end or beginning of lines
 set whichwrap+=h,l
 
 
@@ -129,20 +173,23 @@ set whichwrap+=h,l
 
 " Ignore compiled files
 set wildignore=*.o,*.a,*.so,*.pyc,*.swp,*.class
-" Ignore version control metdata
-if has("win16") || has("win32")
+" Ignore version control metadata
+if has('win32')
   set wildignore+=.git\*,.hg\*,.svn\*,node_modules\*
 else
   set wildignore+=*/.git/*,*/.hg/*,*/.svn/*,*/node_modules/*
 endif
 " Return to last edit position when opening files
-au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
+augroup vimrc_lastpos
+  autocmd!
+  autocmd BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") && &ft !~# 'commit\|rebase' && expand('%:t') !~# '^\%(COMMIT_EDITMSG\|MERGE_MSG\|TAG_EDITMSG\|git-rebase-todo\)$' | exe "normal! g'\"" | endif
+augroup END
 
 
 " UI settings (specific to user)
 " ------------------------------
 
-" Show line numbers, relaive line numbers
+" Show line numbers, relative line numbers
 set rnu
 " Set the special characters in a file
 set listchars=tab:→\ ,nbsp:␣,trail:·,eol:↲,space:·
@@ -150,9 +197,13 @@ set listchars=tab:→\ ,nbsp:␣,trail:·,eol:↲,space:·
 let &colorcolumn="80,".join(range(100,999),",")
 " Highlights beyond 100 look odd for wrapped lines, so for log type files with
 " long lines, set only a single column
-autocmd BufRead,BufNewFile *.{txt,log,conf,md} setlocal cc=80
+augroup vimrc_colorcolumn
+  autocmd!
+  autocmd BufRead,BufNewFile *.{txt,log,conf,md} setlocal cc=80
+augroup END
 " Visual mode pressing * searches for the current selection
 vnoremap <silent> * :<C-u>call VisualSelection('', '')<CR>/<C-R>=@/<CR><CR>
+
 
 " UI settings (specific to user and file type)
 " --------------------------------------------
@@ -166,12 +217,23 @@ set tabstop=4
 " See https://hea-www.harvard.edu/~fine/Tech/vi.html
 " See https://code.visualstudio.com/shortcuts/keyboard-shortcuts-linux.pdf 
 
-nnoremap <M-j> ddp
-nnoremap <M-k> ddkP
+" Terminal Vim often does not decode Alt+key; teach it the ESC-prefix form.
+if !has('nvim') && !has('gui_running')
+  set ttimeout
+  execute "set <M-j>=\ej"
+  execute "set <M-k>=\ek"
+  " Esc followed by j/k within 'ttimeoutlen' (laggy SSH) would arrive as <M-j>/<M-k>
+  " and insert a stray character instead of leaving Insert mode. Treat as Esc + key.
+  inoremap <M-j> <Esc>j
+  inoremap <M-k> <Esc>k
+endif
+nnoremap <silent> <M-j> :m .+1<CR>==
+nnoremap <silent> <M-k> :m .-2<CR>==
+xnoremap <silent> <M-j> :m '>+1<CR>gv=gv
+xnoremap <silent> <M-k> :m '<-2<CR>gv=gv
 nnoremap <C-j> <C-e>
 nnoremap <C-k> <C-y>
-nnoremap <space> za
-
+nnoremap <silent> <space> @=(foldlevel('.') ? 'za' : "\<Space>")<CR>
 
 " vim(normal)     vscode              function
 " ------------------------------------------------------------
@@ -187,11 +249,13 @@ nnoremap <space> za
 " >>              Ctrl+[              Indent/Outdent line
 " 0 / Home        Home                Go to beginning of line
 " ^                                   Go to beginning of line first char
+" I                                   Go to beginning of line first char and switch to insert mode
 " $ / End         End                 Go to end of line
+" A                                   Go to end of line and switch to insert mode
 " gg              Ctrl+ Home          Go to beginning of file
 " G               Ctrl + End          Go to end of file
 " <C-j>/<C-k>     Ctrl+ ↑ / ↓         Scroll line up/down
-"                 Alt+ PgUp / PgDn    Scroll page up/down
+" PgUp / PgDn     Alt+ PgUp / PgDn    Scroll page up/down
 " zc / zo         Ctrl+Shift+ [ / ]   Fold/unfold region
 " za / <space>                        Toggle fold/unfold region
 "                 Ctrl+K Ctrl+ [      Fold all subregions
@@ -203,39 +267,16 @@ nnoremap <space> za
 "                 Ctrl+/              Toggle line comment
 "                 Ctrl+Shift+A        Toggle block comment
 " :set wrap!<cr>  Alt+Z               Toggle word wrap (line wrap?)
+" Ctrl-i, Ctrl-o                      Jump list cursor navigation (See :jumps)
+" Ctrl-], Ctrl-T                      Tag stack cursor navigation (See :tags)
+" gt, gT                              Next and previous tabs (See :tabs)
 " .                                   Repeat last action
 
 " *1 - For vim the cursor needs to be on the fold
 
 
-
-
-" Page up , page down
-"nnoremap <C-k> <C-u>
-"nnoremap <C-j> <C-d>
-
-" Move to begining or end of line
-"map <C-h> ^
-"map <C-l> $
-
-" Move a line of text using ALT+[jk] or Command+[jk] on mac
-"""""" nmap <M-j> mz:m+<cr>`z
-"""""" nmap <M-k> mz:m-2<cr>`z
-"""""" vmap <M-j> :m'>+<cr>`<my`>mzgv`yo`z
-"""""" vmap <M-k> :m'<-2<cr>`>my`<mzgv`yo`z
-"""""" if has("mac") || has("macunix")
-""""""   nmap <D-j> <M-j>
-""""""   nmap <D-k> <M-k>
-""""""   vmap <D-j> <M-j>
-""""""   vmap <D-k> <M-k>
-"""""" endif
-
-" Jumping back, forward
-" Ctrl-i, Ctrl-o are default mapings
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Moving around, tabs, windows and buffers
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Key mappings for buffers and tabs (specific to users)
+" -----------------------------------------------------
 
 """" Buffers
 
@@ -250,102 +291,87 @@ nnoremap <space> za
 
 """" Tabs
 
-
-" shortcut to enable showing special characters (see listchars)
-map <leader><Tab> :set list!<cr>
-" Switch foldmethods with the leader key
-map <leader>zi :set foldmethod=indent<cr>
-map <leader>zs :set foldmethod=syntax<cr>
-map <leader>zm :set foldmethod=manual<cr>
-
-
-" Disable highlight when <leader><cr> is pressed
-map <silent> <leader><cr> :noh<cr>
-
-
-" Shows jumps
-map <leader>j :jumps<cr>
-
-
-
-
 " Buffers to tabs
-map <leader>tb :tab ball<cr>
+nnoremap <leader>tb :tab ball<cr>
 
 " Useful mappings for managing tabs
-map <leader>tn :tabnew<cr>
+nnoremap <leader>tn :tabnew<cr>
 "map <leader>to :tabonly<cr>
 "map <leader>tc :tabclose<cr>
 "map <leader>tm :tabmove
 "map <leader>t<leader> :tabnext
 
 " Tab switching - Go to tab by number
-" gt - Next tab
-" gT - Previous tab
-noremap <leader>1 1gt
-noremap <leader>2 2gt
-noremap <leader>3 3gt
-noremap <leader>4 4gt
-noremap <leader>5 5gt
-noremap <leader>6 6gt
-noremap <leader>7 7gt
-noremap <leader>8 8gt
-noremap <leader>9 9gt
-noremap <leader>0 :tabfirst<cr>
+nnoremap <leader>1 1gt
+nnoremap <leader>2 2gt
+nnoremap <leader>3 3gt
+nnoremap <leader>4 4gt
+nnoremap <leader>5 5gt
+nnoremap <leader>6 6gt
+nnoremap <leader>7 7gt
+nnoremap <leader>8 8gt
+nnoremap <leader>9 9gt
+nnoremap <leader>0 :tabfirst<cr>
 
 " Let 'tt' toggle between this and the last accessed tab
 let g:lasttab = 1
-au TabLeave * let g:lasttab = tabpagenr()
-nmap <Leader>tt :exe "tabn ".g:lasttab<CR>
+augroup vimrc_lasttab
+  autocmd!
+  autocmd TabLeave * let g:lasttab = tabpagenr()
+augroup END
+nnoremap <Leader>tt :exe "tabn ".g:lasttab<CR>
 
 " Opens a new tab with the current buffer's path
 " Super useful when editing files in the same directory
-map <leader>te :tabedit <c-r>=expand("%:p:h")<cr>/
+nnoremap <leader>te :tabedit <c-r>=expand("%:p:h")<cr>/
 
 " Open same file in new tab
-map <leader>ts :tab split<cr>
+nnoremap <leader>ts :tab split<cr>
 
-"""" Misc
+
+" Miscellaneous mappings for buffers and tabs (specific to users)
+" ---------------------------------------------------------------
+
+" Shortcut to enable showing special characters (see listchars)
+nnoremap <leader><Tab> :set list!<cr>
+
+" Switch foldmethods with the leader key
+nnoremap <leader>zi :set foldmethod=indent<cr>
+nnoremap <leader>zs :set foldmethod=syntax<cr>
+nnoremap <leader>zm :set foldmethod=manual<cr>
+
+" Disable highlight when <leader><cr> is pressed
+nnoremap <silent> <leader><cr> :noh<cr>
+
+" Shows jumps
+nnoremap <leader>j :jumps<cr>
 
 " Switch CWD to the directory of the open buffer
-map <leader>cd :cd %:p:h<cr>:pwd<cr>
+nnoremap <leader>cd :cd %:p:h<cr>:pwd<cr>
 
-
-
-" Pressing ,ss will toggle and untoggle spell checking
-map <leader>ss :setlocal spell!<cr>
+" Pressing \ss will toggle and untoggle spell checking
+nnoremap <leader>ss :setlocal spell!<cr>
 
 " Spellcheck shortcuts using <leader>
-map <leader>sn ]s
-map <leader>sp [s
-map <leader>sa zg
-map <leader>s? z=
-
-
+nnoremap <leader>sn ]s
+nnoremap <leader>sp [s
+nnoremap <leader>sa zg
+nnoremap <leader>s? z=
 
 " Remove the Windows ^M - when the encodings gets messed up
-noremap <Leader>m mmHmt:%s/<C-V><cr>//ge<cr>'tzt'm
+nnoremap <silent> <Leader>m :call <SID>StripCR()<CR>
 
 " Quickly open a buffer for scribble
-map <leader>q :e ~/buffer<cr>
+nnoremap <leader>q :e ~/buffer<cr>
 
 " Quickly open a markdown buffer for scribble
-map <leader>x :e ~/buffer.md<cr>
-
-" Toggle paste mode on and off
-map <leader>pp :setlocal paste!<cr>
+nnoremap <leader>x :e ~/buffer.md<cr>
 
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" => Helper functions
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Helper functions
+" ----------------
 
-function! CmdLine(str)
-    exe "menu Foo.Bar :" . a:str
-    emenu Foo.Bar
-    unmenu Foo
-endfunction
-
+" Visual mode: use the selected text as the search pattern (see the * mapping)
 function! VisualSelection(direction, extra_filter) range
     let l:saved_reg = @"
     execute "normal! vgvy"
@@ -353,22 +379,15 @@ function! VisualSelection(direction, extra_filter) range
     let l:pattern = escape(@", "\\/.*'$^~[]")
     let l:pattern = substitute(l:pattern, "\n$", "", "")
 
-    if a:direction == 'gv'
-        call CmdLine("Ag '" . l:pattern . "' " )
-    elseif a:direction == 'replace'
-        call CmdLine("%s" . '/'. l:pattern . '/')
-    endif
-
     let @/ = l:pattern
     let @" = l:saved_reg
 endfunction
 
-" Returns true if paste mode is enabled
-function! HasPaste()
-    if &paste
-        return 'PASTE MODE  '
-    endif
-    return ''
+" Remove DOS ^M characters, keeping cursor/scroll position and your marks
+function! s:StripCR() abort
+    let l:view = winsaveview()
+    keeppatterns %s/\r//ge
+    call winrestview(l:view)
 endfunction
 
 " Don't close window, when deleting a buffer
@@ -400,39 +419,68 @@ endfunction
 " Installation
 " curl -fLo ~/.vim/autoload/plug.vim https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 
+" EditorConfig is built in to Neovim 0.9+ and bundled with Vim 9.0.1776+.
+" Older versions get the plugin instead.
+let s:builtin_editorconfig = has('nvim') ? has('nvim-0.9') : has('patch-9.0.1776')
+
+" vim-polyglot would otherwise claim *.s / *.S as R and leave *.asm undetected.
+" Disabling its R pack lets Vim's own runtime detect assembly.
+let g:polyglot_disabled = ['r-lang']
+
 call plug#begin()
 
 " ### lang-support
-Plug 'sheerun/vim-polyglot'
+if !has('nvim')
+  Plug 'sheerun/vim-polyglot'
+endif
+
+" ### editorconfig (only where it is not built in)
+if !s:builtin_editorconfig
+  Plug 'editorconfig/editorconfig-vim'
+endif
 
 " ### colorschemes
-Plug 'altercation/vim-colors-solarized'  " most popular vim theme (adopted from terminal theme solaris )
-Plug 'tomasr/molokai'                    " port of monokai theme for TextMate
-Plug 'joshdick/onedark.vim'              " port of default atom theme (similar to sublime3)
-Plug 'morhetz/gruvbox'                   " popular vim colorscheme (solarized with blue filter)
-"Plug 'chriskempson/base16-vim'           " multiple 16bit colorshemes
+" Many are installed on purpose: different people on the team prefer different
+" ones (see g:vimrc_colorscheme at the top). Remove the ones nobody uses.
+Plug 'altercation/vim-colors-solarized'  " most popular vim theme (adopted from terminal theme solarized )
 Plug 'nanotech/jellybeans.vim'           " popular vim colorscheme (based on classic vim)
 Plug 'jnurmine/zenburn'                  " popular vim colorscheme (low contrast)
+" ### colorschemes - other editors
+Plug 'tomasr/molokai'                    " port of monokai theme for TextMate
+Plug 'joshdick/onedark.vim'              " port of default atom theme (similar to sublime3)
+Plug 'tomasiser/vim-code-dark'           " port of vscode dark theme
+" ### maintained colorschemes with matching airline themes
+Plug 'sainnhe/sonokai'                   " monokai-like (sublime style), several variants
+Plug 'sainnhe/gruvbox-material'          " softer, maintained gruvbox (solarized with blue filter)
 
 " ### interface
 Plug 'vim-airline/vim-airline'
-Plug 'scrooloose/nerdtree'
-Plug 'majutsushi/tagbar'
-Plug 'kien/ctrlp.vim'                    " Plug 'junegunn/fzf' replaced by ctrlp
-Plug 'jiangmiao/auto-pairs'
+Plug 'vim-airline/vim-airline-themes'    " airline themes for solarized, zenburn, molokai, ...
+Plug 'preservim/nerdtree'
+Plug 'preservim/tagbar'
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
+Plug 'LunarWatcher/auto-pairs'
 
 " ### completion
-Plug 'sirver/ultisnips'                  " Snippet engine
-Plug 'honza/vim-snippets'                " Snippet repo
-" TODO: deoplete or supertab or youcompleteme
+" Snippets are optional: `let g:vimrc_ultisnips = 0` (see top of file) skips both.
+if g:vimrc_ultisnips
+  Plug 'sirver/ultisnips'                " Snippet engine (needs Python 3 support)
+  Plug 'honza/vim-snippets'              " Snippet repo
+endif
+" TODO: copilot for completions
 
 " ### syntax-check
-Plug 'scrooloose/syntastic'              " vimscript based checker with linter support
-"Plug 'w0rp/ale'                          " lsp based syntax checker
+Plug 'dense-analysis/ale'
 
 call plug#end()
 
-
+" Vim 9.0.1776+ ships EditorConfig as an optional package; Neovim 0.9+ has it
+" built in and needs nothing. (.editorconfig files override the global
+" expandtab/shiftwidth/tabstop above, per project.)
+if !has('nvim') && s:builtin_editorconfig
+  silent! packadd editorconfig
+endif
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins - Static
@@ -440,32 +488,30 @@ call plug#end()
 
 "   curl -LSso ~/.vim/plugin/pathogen.vim http://cscope.sourceforge.net/cscope_maps.vim
 
-
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins - Colors
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-"Use 24-bit (true-color) mode in Vim/Neovim when outside tmux.
-if (empty($TMUX))
-"If you're using tmux version 2.2 or later, you can remove the outermost $TMUX check and use tmux's 24-bit color support
-"(see < http://sunaku.github.io/tmux-24bit-color.html#usage > for more information.)
-  if (has("nvim"))
-    "For Neovim 0.1.3 and 0.1.4 < https://github.com/neovim/neovim/pull/2198 >
-    let $NVIM_TUI_ENABLE_TRUE_COLOR=1
+" Use 24-bit (true-color) mode in Vim/Neovim, including inside tmux/screen.
+" Opt out with `let g:vimrc_truecolor = 0` on terminals that do not support it.
+" tmux itself must advertise it too (tmux >= 3.2):
+"     set -as terminal-features ',*:RGB'     (older tmux: set -ga terminal-overrides ',*:Tc')
+if g:vimrc_truecolor && has("termguicolors")
+  if !has('nvim') && &term =~# '^\%(screen\|tmux\)'
+    " Vim does not know the 24-bit escape codes under screen/tmux; set them.
+    let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+    let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
   endif
-  "For Neovim > 0.1.5 and Vim > patch 7.4.1799 < https://github.com/vim/vim/commit/61be73bb0f965a895bfb064ea3e55476ac175162 >
-  "Based on Vim patch 7.4.1770 (`guicolors` option) < https://github.com/vim/vim/commit/8a633e3427b47286869aa4b96f2bfc1fe65b25cd >
-  " < https://github.com/neovim/neovim/wiki/Following-HEAD#20160511 >
-  if (has("termguicolors"))
-    set termguicolors
-  endif
+  set termguicolors
 endif
 
 " Set users choice of colorscheme
-let g:onedark_terminal_italics = 1
-let g:airline_theme='onedark'
-colorscheme onedark
-
+set t_Co=256
+set t_ut=
+execute 'colorscheme ' . g:vimrc_colorscheme
+" Airline picks the theme that matches the colorscheme name by itself (and
+" follows later :colorscheme changes), so g:airline_theme is deliberately NOT
+" set here. Set it in your own vimrc if you want a fixed airline theme.
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins - Interface
@@ -476,84 +522,109 @@ let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#tab_nr_type = 1
 
 "" nerdtree
-map <C-n> :NERDTreeToggle<CR>
-map <leader>n :NERDTreeFind<CR>
+nnoremap <C-n> :NERDTreeToggle<CR>
+nnoremap <leader>n :NERDTreeFind<CR>
 
 "" tagbar
-nmap <F8> :TagbarToggle<CR>
+nnoremap <F8> :TagbarToggle<CR>
 
-"" ctrlp
-let g:ctrlp_custom_ignore = {
-    \ 'dir':  '\v[\/]\.(git|hg|svn)$',
-    \ 'file': '\v\.(o|exe|so|dll|a|pyc|class)$',
-    \ 'link': 'some_bad_symbolic_links',
-    \ }
-" TODO: link specification for ctrlp
+"" fzf (replaces ctrlp). Needs the fzf binary (installed by :PlugInstall);
+"" :Rg needs ripgrep. fzf ignores 'wildignore'; for .gitignore-aware file lists
+"" put this in your shell rc:
+""     export FZF_DEFAULT_COMMAND='rg --files --hidden --glob "!.git"'
+nnoremap <C-p> :Files<CR>
+nnoremap <leader>b :Buffers<CR>
+if executable('rg')
+  nnoremap <leader>/ :Rg<space>
+endif
 
 "" auto-pairs
-let g:AutoPairsMultilineClose = 0 " doesn't delete next line brace when deleting current one
+let g:AutoPairsMapBS = 1                 " Backspace deletes an empty pair
+let g:AutoPairsCompleteOnlyOnSpace = 1   " no auto-close right before a word
+let g:AutoPairsMapSpace = 0              " no padding like ( x )
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins - Completion / Snippets
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" vim-snippets with ultisnips engine
-" TODO:
-
-
-" TODO: remove deoplete settings
-""  " LanguageClient-neovim (deoplete source for lsp servers)
-"" if has('nvim')
-""   let g:LanguageClient_serverCommands = {
-""         \ 'cpp': [ 'clangd' ],
-""         \ }
-"" 
-""   let g:LanguageClient_useVirtualText='No'
-""   let g:LanguageClient_diagnosticsEnable = 0 " Diagnostics are taken from ALE
-"" 
-""   " note that if you are using Plug mapping you should not use `noremap` mappings.
-""   nmap <F5> <Plug>(lcn-menu)
-""   " Or map each action separately
-""   nmap <silent>K <Plug>(lcn-hover)
-""   nmap <silent> gd <Plug>(lcn-definition)
-""   nmap <silent> <F2> <Plug>(lcn-rename)
-"" endif
-"" 
-"" "" Deoplete
-"" let g:deoplete#enable_at_startup = 1
-"" " tab completion with deoplete
-"" inoremap <silent><expr> <Tab>
-""       \ pumvisible() ? "\<C-n>" : "\<TAB>"
-"" 
-"" set completeopt-=preview " vim ins-completeion subsystem option to disable scratch buffers
+" vim-snippets with ultisnips engine. Type e.g. `for<Tab>` to expand a loop,
+" <Tab> / <S-Tab> to jump between the placeholders.
+" UltiSnips needs Python 3 support (:echo has('python3') must print 1; Neovim
+" needs the `pynvim` package). Without it the plugin silently does nothing.
+if g:vimrc_ultisnips
+  let g:UltiSnipsExpandTrigger       = '<Tab>'
+  let g:UltiSnipsJumpForwardTrigger  = '<Tab>'
+  let g:UltiSnipsJumpBackwardTrigger = '<S-Tab>'
+endif
+" ---- When GitHub Copilot (github/copilot.vim) is installed ----
+" Copilot also claims <Tab> to accept a suggestion, so the two will fight.
+" Pick ONE of these:
+"  (a) Keep both: move UltiSnips off <Tab> by changing the three triggers
+"      above to e.g.  '<C-j>'  (expand),  '<C-j>'  (forward),  '<C-k>'  (backward)
+"  (b) Turn snippets off completely: `let g:vimrc_ultisnips = 0` before
+"      sourcing this file (top of file); UltiSnips and vim-snippets are then
+"      neither loaded nor configured.
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins - Syntax / Linter
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-" TODO: make ale settings conditional
-"  " ALE
-"  " disable lint on text change
-"  let g:ale_lint_on_text_changed = 0
-"  " Limit C/CPP linters
-"  let g:ale_linters = {
-"  \   'cpp': ['cc'],
-"  \}
-"  let g:ale_c_parse_compile_commands = 1
+" Keep ALE quiet: sign-column markers + message in the command line on the cursor line
+let g:ale_virtualtext_cursor = 'disabled'   " no inline end-of-line text (default is 'all')
+let g:ale_echo_cursor        = 1            " message in the command line when cursor is on the line
+let g:ale_lint_on_insert_leave = 0          " don't lint every time you press Esc
+let g:ale_lint_on_enter      = 1            " lint when a file is opened
+let g:ale_lint_on_save       = 1            " lint when you :w
+let g:ale_lint_on_text_changed = 'never'     " lint on save / leaving insert only
+
+" ALE (async lint engine; replaces syntastic).
+"
+" Choice of linters and best installation sources:
+" C       cc, cppcheck, gcc,        System wide install (eg. via apt)
+" C++     cc, cppcheck, clangtidy   System wide install (eg. via apt)
+" CMake   cmake_lint                System wide install (eg. for apt, cmake-format installs pkg)
+" Bazel   buildifier                System wide manual install from GitHub src
+" asm     (none)                    Removed: gcc linter gives false positives on ARM/NASM
+" Shell   shell, shellcheck         System wide install (eg. via apt)
+" Java    javac                     System wide install (eg. via apt)
+" Rust    cargo (+ clippy)          System wide install (via rustup)
+" Python  ruff, mypy                mypy system wide for random files. Override ruff, mypy in venv
+" SQL     sqlfluff                  System wide for Cpp, Java, Rust, etc. Override in venv for Py.
+"         WARN: vim must be launched from venv for sqlfluff to use venv version
+" JS/TS   eslint                    npm env
+" HTML    htmlhint                  npm env (Can use tidy from apt pkg, but unnecessary for me)
+" CSS     stylelint                 npm	env
+let g:ale_linters_explicit = 1          " ONLY the linters listed below run (no surprise
+                                        " language servers such as tsserver/gopls/clangd)
+let g:ale_linters = {
+\   'c':          ['cc', 'cppcheck'],
+\   'cpp':        ['cc', 'cppcheck', 'clangtidy'],
+\   'python':     ['ruff', 'mypy'],
+\   'sh':         ['shell', 'shellcheck'],
+\   'java':       ['javac'],
+\   'javascript': ['eslint'],
+\   'typescript': ['eslint'],
+\   'html':       ['htmlhint'],
+\   'css':        ['stylelint'],
+\   'rust':       ['cargo'],
+\   'sql':        ['sqlfluff'],
+\   'cmake':      ['cmake_lint'],
+\   'bzl':        ['buildifier'],
+\}
+let g:ale_rust_cargo_use_clippy = 1     " cargo check -> clippy
+let g:ale_c_parse_compile_commands = 1  " use compile_commands.json if present
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " => Plugins - Filetype
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 " Delete trailing white space on save. Enabled for python and cxx.
-func! DeleteTrailingWS()
-  exe "normal mz"
-  %s/\s\+$//ge
-  exe "normal `z"
-endfunc
-autocmd BufWrite *.py :call DeleteTrailingWS()
-autocmd BufWrite *.cpp :call DeleteTrailingWS()
-autocmd BufWrite *.hpp :call DeleteTrailingWS()
-autocmd BufWrite *.c :call DeleteTrailingWS()
-autocmd BufWrite *.h :call DeleteTrailingWS()
-
+function! s:TrimTrailingWS() abort
+  let l:view = winsaveview()
+  keeppatterns %s/\s\+$//e
+  call winrestview(l:view)
+endfunction
+augroup trim_ws
+  autocmd!
+  autocmd BufWritePre *.py,*.c,*.h,*.cc,*.cpp,*.hpp call s:TrimTrailingWS()
+augroup END
